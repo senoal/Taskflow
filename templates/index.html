@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pythones — To Do App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='readability.css') }}" />
+</head>
+<body>
+  <main class="shell">
+    <nav class="topbar">
+      <a class="brand" href="/"><span class="brand-mark">&gt;_</span><span>pythones<span class="brand-dot">.app</span></span></a>
+      <div class="topbar-tools"><div class="system-status"><i></i>SYSTEM ONLINE <span class="date" id="todayDate"></span></div><label class="language-switcher" for="languageSelect"><span>Language</span><select id="languageSelect" aria-label="Pilih bahasa"><option value="id">ID</option><option value="en">EN</option></select></label></div>
+    </nav>
+
+    <section class="hero">
+      <p class="eyebrow">// PERSONAL PRODUCTIVITY OS v1.0</p>
+      <h1>Build your day.<br><em>Ship your goals.</em></h1>
+      <p class="intro">Workspace pribadi untuk memprioritaskan pekerjaan, mengelola fokus, dan terus bergerak maju.</p>
+      <div class="task-orbit" aria-hidden="true"><div class="orbit-glow"></div><div class="orbit-track track-one"></div><div class="orbit-track track-two"></div><div class="orbit-card orbit-card-one"><i></i><span></span><b></b></div><div class="orbit-card orbit-card-two"><i></i><span></span><b></b></div><div class="orbit-card orbit-card-three"><i></i><span></span><b></b></div><div class="orbit-pulse pulse-one"></div><div class="orbit-pulse pulse-two"></div></div>
+    </section>
+
+    <section class="overview" aria-label="Ringkasan tugas">
+      <article class="metric-card total-metric" data-dashboard-filter="all" role="button" tabindex="0"><div class="metric-top"><span class="metric-label">01 / TOTAL TASKS</span><span class="metric-icon">#</span></div><strong id="totalCount">0</strong><small id="totalLabel">Total task dalam workspace</small><div class="metric-bar"><i></i></div></article>
+      <article class="metric-card complete-metric" data-dashboard-filter="completed" role="button" tabindex="0"><div class="metric-top"><span class="metric-label">02 / DEPLOYED</span><span class="metric-icon">✓</span></div><strong id="completedCount">0</strong><small id="completedLabel">Target berhasil diselesaikan</small><div class="metric-bar"><i></i></div></article>
+      <article class="metric-card active-metric" data-dashboard-filter="active" role="button" tabindex="0"><div class="metric-top"><span class="metric-label">03 / ACTIVE QUEUE</span><span class="metric-icon">↗</span></div><strong id="activeCount">0</strong><small id="activeLabel">Siap untuk dikerjakan</small><div class="metric-bar"><i></i></div></article>
+      <article class="metric-card deadline-metric" id="deadlineCard" data-dashboard-filter="deadline" role="button" tabindex="0"><div class="metric-top"><span class="metric-label">04 / DEADLINE</span><span class="metric-icon">!</span></div><strong id="todayCount">0</strong><small id="deadlineLabel">Tidak ada deadline hari ini</small><div class="metric-bar"><i></i></div></article>
+      <article class="metric-card cancel-metric" data-dashboard-filter="canceled" role="button" tabindex="0"><div class="metric-top"><span class="metric-label">05 / CANCELED</span><span class="metric-icon">×</span></div><strong id="canceledCount">0</strong><small id="canceledLabel">Tidak ada task dibatalkan</small><div class="metric-bar"><i></i></div></article>
+    </section>
+
+    <section class="tasks-section">
+      <div class="section-head"><div><p class="eyebrow">// EXECUTION BOARD</p><h2>Task queue</h2><p id="taskSummary">Mulai dengan menambahkan tugas pertama.</p></div><div class="queue-controls" aria-label="Aksi task"><button class="export-button" id="exportTasks"><span class="button-icon">↓</span> Export Excel</button><button class="add-button" id="openModal"><span class="button-icon">+</span> Tambah tugas</button></div></div>
+      <form class="task-filters" id="taskFilters"><input id="searchTasks" type="search" placeholder="Cari task, catatan, kategori..." aria-label="Cari task"><label>Dari<input id="dateFrom" type="date" aria-label="Tanggal mulai"></label><label>Sampai<input id="dateTo" type="date" aria-label="Tanggal akhir"></label><button type="button" id="clearFilters">Reset</button></form>
+      <div class="task-list" id="taskList"></div>
+      <nav class="pagination" id="pagination" aria-label="Navigasi halaman task"></nav>
+      <div class="empty-state" id="emptyState"><div class="empty-icon">✓</div><h3>Semua terasa ringan.</h3><p>Tidak ada tugas pada daftar ini.</p><button class="text-button" id="emptyAdd">+ Tambah tugas baru</button></div>
+    </section>
+    <footer><span class="footer-brand">PYTHONES — TO DO APP</span><i>•</i><span class="footer-focus">DIBUAT UNTUK FOKUS</span><span class="footer-release"><b>VERSION</b> {{ app_version }} <i>•</i> <b>UPDATED</b> {{ last_updated }}</span></footer>
+  </main>
+
+  <div class="modal-backdrop" id="modal"><form class="modal" id="taskForm"><div class="modal-top"><div><p class="eyebrow">TUGAS BARU</p><h2>Tambahkan fokus baru</h2></div><button type="button" class="close" id="closeModal">×</button></div><label>Judul tugas<input name="title" required maxlength="120" placeholder="Misalnya, Selesaikan proposal" autofocus></label><label>Catatan <span class="optional">opsional</span><textarea name="description" maxlength="300" placeholder="Tambahkan detail kecil jika diperlukan"></textarea></label><div class="form-row"><label>Kategori<input name="category" value="Personal" maxlength="50"></label><label>Prioritas<select name="priority"><option value="low">Rendah</option><option value="medium" selected>Sedang</option><option value="high">Tinggi</option></select></label></div><label>Jatuh tempo <span class="optional">opsional</span><input name="due_date" type="date"></label><div class="form-actions"><button type="button" class="cancel" id="cancelModal">Batal</button><button class="save" type="submit">Simpan tugas <span>→</span></button></div></form></div>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+  <script src="{{ url_for('static', filename='subtasks.js') }}"></script>
+  <script src="{{ url_for('static', filename='filters.js') }}"></script>
+  <script src="{{ url_for('static', filename='pagination.js') }}"></script>
+  <script src="{{ url_for('static', filename='overview.js') }}"></script>
+  <script src="{{ url_for('static', filename='canceled.js') }}"></script>
+  <script src="{{ url_for('static', filename='dashboard-filters.js') }}"></script>
+  <script src="{{ url_for('static', filename='export.js') }}"></script>
+  <script src="{{ url_for('static', filename='locale.js') }}"></script>
+</body>
+</html>
