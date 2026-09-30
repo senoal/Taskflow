@@ -6,7 +6,7 @@ document.querySelector('#exportTasks').onclick = async () => {
     const response = await fetch(`/api/tasks/export?${params}`);
     if (!response.ok) { const error = await response.json(); throw new Error(error.error || 'Ekspor gagal.'); }
     const blob = await response.blob(); const url = URL.createObjectURL(blob);
-    const link = document.createElement('a'); link.href = url; link.download = 'tasks_export.xlsx'; link.click(); URL.revokeObjectURL(url);
+    const link = document.createElement('a'); link.href = url; link.download = 'portofolio_proyek.xlsx'; link.click(); URL.revokeObjectURL(url);
   } catch (error) { alert(error.message); }
   finally { button.disabled = false; button.textContent = 'Export Excel'; }
 };

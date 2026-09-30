@@ -11,16 +11,16 @@ refresh = async function() {
     if (task.canceled) {
       card.classList.add('canceled');
       const check=card.querySelector('.check'); check.checked=false; check.disabled=true;
-      card.querySelector('.task-title').insertAdjacentHTML('beforeend',' <span class="cancelled-badge">BATAL</span>');
+      card.querySelector('.task-title').insertAdjacentHTML('beforeend',' <span class="cancelled-badge">DIHENTIKAN</span>');
     }
     const actions=card.querySelector('.task-actions');
     const button=document.createElement('button'); button.className='cancel-button';
-    button.textContent=task.canceled?'Aktifkan':'Batalkan';
+    button.textContent=task.canceled?'Aktifkan kembali':'Hentikan';
     button.onclick=()=>setCanceled(id,!task.canceled); actions.append(button);
   });
 };
 async function setCanceled(id, canceled) {
-  const message=canceled?'Batalkan task ini? Task tetap tersimpan dan dapat diaktifkan kembali.':'Aktifkan kembali task ini?';
+  const message=canceled?'Hentikan proyek ini? Data proyek tetap tersimpan dan dapat diaktifkan kembali.':'Aktifkan kembali proyek ini?';
   if (!confirm(message)) return;
   await request(`/api/tasks/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({canceled})});
   refresh();

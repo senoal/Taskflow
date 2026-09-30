@@ -4,13 +4,13 @@ function updateOverviewState() {
   const total = Number(document.querySelector('#totalCount').textContent) || 0;
   const canceled = Number(document.querySelector('#canceledCount').textContent) || 0;
   const dueToday = Number(document.querySelector('#todayCount').textContent) || 0;
-  document.querySelector('#activeLabel').textContent = active ? `${active} task menunggu untuk dikerjakan` : 'Inbox kerja sedang bersih';
-  document.querySelector('#completedLabel').textContent = completed ? `${completed} target berhasil diselesaikan` : 'Belum ada task yang diselesaikan';
-  document.querySelector('#totalLabel').textContent = total ? `${total} task sesuai filter aktif` : 'Belum ada task dalam workspace';
-  document.querySelector('#canceledLabel').textContent = canceled ? `${canceled} task tidak dilanjutkan` : 'Tidak ada task dibatalkan';
+  document.querySelector('#activeLabel').textContent = active ? `${active} proyek sedang dalam pengerjaan` : 'Tidak ada proyek aktif saat ini';
+  document.querySelector('#completedLabel').textContent = completed ? `${completed} proyek berhasil diselesaikan` : 'Belum ada proyek yang selesai';
+  document.querySelector('#totalLabel').textContent = total ? `${total} proyek dalam portofolio` : 'Belum ada proyek dalam workspace';
+  document.querySelector('#canceledLabel').textContent = canceled ? `${canceled} proyek dihentikan` : 'Tidak ada proyek yang dihentikan';
   const deadline = document.querySelector('#deadlineCard');
   deadline.classList.toggle('has-warning', dueToday > 0);
-  document.querySelector('#deadlineLabel').textContent = dueToday ? `${dueToday} task perlu perhatian hari ini` : 'Tidak ada deadline hari ini';
+  document.querySelector('#deadlineLabel').textContent = dueToday ? `${dueToday} proyek memerlukan perhatian hari ini` : 'Tidak ada tenggat hari ini';
 }
 new MutationObserver(updateOverviewState).observe(document.querySelector('#activeCount'), {childList:true, characterData:true, subtree:true});
 new MutationObserver(updateOverviewState).observe(document.querySelector('#completedCount'), {childList:true, characterData:true, subtree:true});
