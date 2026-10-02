@@ -17,8 +17,8 @@ app = Flask(__name__)
 DB_PATH = Path(__file__).with_name("pythones_todo.db")
 UPLOAD_DIR = Path(__file__).with_name("uploads")
 MAX_FILE_SIZE = 50 * 1024 * 1024
-APP_VERSION = "v1.6.0"
-LAST_UPDATED = "2026-09-30"
+APP_VERSION = "v1.6.2"
+LAST_UPDATED = "2026-10-02"
 app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_SIZE
 
 
@@ -44,6 +44,19 @@ def normalize_link(value):
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         raise ValueError("Link harus berupa alamat web HTTP atau HTTPS yang valid.")
     return link
+
+
+def normalize_project_title(value):
+    return " ".join(str(value or "").split())
+
+
+def project_title_exists(conn, title, exclude_id=None):
+    title_key = normalize_project_title(title).casefold()
+    rows = conn.execute("SELECT id, title FROM tasks").fetchall()
+    return any(
+        row["id"] != exclude_id and normalize_project_title(row["title"]).casefold() == title_key
+        for row in rows
+    )
 
 
 def init_db():
@@ -355,7 +368,7 @@ def delete_attachment(attachment_id):
 @app.post("/api/tasks")
 def create_task():
     data = request.get_json() or {}
-    title = str(data.get("title", "")).strip()
+    title = normalize_project_title(data.get("title", ""))
     if not title:
         return jsonify({"error": "Nama proyek wajib diisi."}), 400
     priority = data.get("priority", "medium")
@@ -366,6 +379,9 @@ def create_task():
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     with closing(get_db()) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        if project_title_exists(conn, title):
+            return jsonify({"error": "Nama proyek sudah digunakan. Gunakan nama proyek yang berbeda."}), 409
         cursor = conn.execute(
             "INSERT INTO tasks (title, description, link, category, due_date, priority, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
             (title, str(data.get("description", "")).strip(), link, str(data.get("category", "Personal")).strip() or "Personal", data.get("due_date") or None, priority, datetime.now().isoformat(timespec="seconds")),
@@ -382,8 +398,10 @@ def update_task(task_id):
     updates = {key: value for key, value in data.items() if key in allowed}
     if not updates:
         return jsonify({"error": "Tidak ada perubahan."}), 400
-    if "title" in updates and not str(updates["title"]).strip():
-        return jsonify({"error": "Nama proyek wajib diisi."}), 400
+    if "title" in updates:
+        updates["title"] = normalize_project_title(updates["title"])
+        if not updates["title"]:
+            return jsonify({"error": "Nama proyek wajib diisi."}), 400
     if "completed" in updates:
         updates["completed"] = int(bool(updates["completed"]))
         if updates["completed"]:
@@ -401,6 +419,9 @@ def update_task(task_id):
             return jsonify({"error": str(error)}), 400
     clause = ", ".join(f"{key} = ?" for key in updates)
     with closing(get_db()) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        if "title" in updates and project_title_exists(conn, updates["title"], exclude_id=task_id):
+            return jsonify({"error": "Nama proyek sudah digunakan. Gunakan nama proyek yang berbeda."}), 409
         conn.execute(f"UPDATE tasks SET {clause} WHERE id = ?", [*updates.values(), task_id])
         conn.commit()
         task = conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
